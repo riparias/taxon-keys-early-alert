@@ -1,0 +1,180 @@
+---
+title: "Check correctness species list information against GBIF Backbone"
+subtitle: "Workflow to check the correctness of the GBIF taxon keys of the LIFE RIPARIAS early alert tool"
+author:
+- Damiano Oldoni
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+# Setup 
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = TRUE)
+```
+
+
+Load libraries:
+
+```{r message = FALSE}
+library(readr) # to read txt files
+library(here) # to work with paths
+library(rgbif) # to interface to the Global Biodiversity Information Facility API
+library(dplyr) # to do data wrangling
+library(purrr) # to do functional programming
+library(tidylog) # to get informative messages while doing data wrangling 
+library(testthat) # to run tests
+
+```
+
+# Read source data
+
+Create a data frame `input_data` from the export of the species list used in the LIFE RIPARIAS [early alert tool](https://alert.riparias.be/):
+
+```{r read_species_list}
+input_data <- read_csv(
+  file = here("data", "reference", "Species-2023-04-22.csv")
+) 
+```
+
+Preview data:
+
+```{r}
+input_data %>% head(n = 5)
+```
+
+# Harvest taxonomic information from GBIF
+
+## Harvest taxonomic information from checklists
+
+The LIFE RIPARIAS early alert tool includes species of the following checklists:
+
+- [RIPARIAS target species list](https://www.gbif.org/dataset/fd004d9a-2ea4-4244-bb60-0df508d20a15) (`datasetKey`: `fd004d9a-2ea4-4244-bb60-0df508d20a15`)
+
+```{r get_taxa}
+taxa_checklists <- 
+  rgbif::name_usage(datasetKey = "fd004d9a-2ea4-4244-bb60-0df508d20a15")$data
+taxa_checklists <- taxa_checklists %>% filter(origin == "SOURCE")
+```
+
+View taxa:
+
+```{r view}
+taxa_checklists
+```
+
+## Harvest taxonomic information from the GBIF Backbone Taxonomy
+
+The  `nubKey` are the GBIF taxon keys of the taxa as defined in the [GBIF Backbone Taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c).
+
+All taxa have a match to the bakbone:
+
+```{r check_match_backbone}
+assertthat::assert_that(all(!is.na(taxa_checklists$nubKey)))
+```
+
+We harvest taxonomic information from the backbone, as these keys are the ones linked to the occurrences and so used in the early alert tool:
+
+```{r harvest_from_backbone}
+taxa <- purrr::map_df(
+  taxa_checklists$nubKey, 
+  function(x) {
+    taxa_info <- rgbif::name_usage(x)$data
+  }
+)
+```
+
+View taxonomic information from backbone:
+
+```{r backbone_taxa}
+taxa
+```
+
+## Patches
+
+### Synonyms
+
+If a synonym occurs in the RIPARIAS target species list, we will use the accepted taxon key from the backbone.
+
+Synonyms:
+
+```{r}
+synonyms <- taxa %>%
+  filter(!taxonomicStatus %in% c("ACCEPTED", "DOUBTFUL"))
+synonyms
+```
+
+Get taxonomic information of the correspondent accepted taxa:
+
+```{r accepted}
+accepted <- purrr::map_df(
+  synonyms$acceptedKey, 
+  function(x) {
+    taxa_info <- rgbif::name_usage(x)$data
+  }
+)
+```
+
+View information about the accepted taxa:
+
+```{r}
+accepted
+```
+
+# Combine information
+
+The early alert tool uses latin names as defined in the checklists (column `species`) and GBIF taxon keys of the accepted taxa as defined in the GBIF Backbone:
+
+```{r combine_names_gbif_keys}
+alert_species <- taxa_checklists %>%
+  select(species, nubKey) %>%
+  left_join(taxa %>% select(key, acceptedKey),
+            by = c("nubKey" = "key")) %>%
+  left_join(accepted %>%
+              select(key),
+            by = c("acceptedKey" = "key")) %>%
+  mutate(key = if_else(!is.na(acceptedKey),
+                       acceptedKey,
+                       nubKey)) %>%
+  select(-c(nubKey, acceptedKey))
+```
+
+Show alert species:
+
+```{r alert_species}
+alert_species
+```
+
+## Save output
+
+Save the list of names and GBIF taxon keys:
+
+```{r write_alert_species}
+write_csv(alert_species, 
+          file = here::here("data", "processed", "alert_species.csv"),
+          na = ""
+)
+```
+
+# Check correctness species list of the LIFE RIPARIAS early alert tool
+
+We can now check the correctness of the information as defined in the early alert tool (species list in `./data/reference`)
+
+
+Check species names:
+
+```{r check_names_latin}
+assertthat::assert_that(all(input_data$name %in% alert_species$species))
+```
+
+Check GBIF taxon keys:
+
+```{r check_keys}
+assertthat::assert_that(all(input_data$gbif_taxon_key %in% alert_species$key))
+```

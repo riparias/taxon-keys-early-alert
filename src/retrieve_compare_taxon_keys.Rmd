@@ -29,7 +29,7 @@ library(rgbif) # to interface to the Global Biodiversity Information Facility AP
 library(dplyr) # to do data wrangling
 library(purrr) # to do functional programming
 library(tidylog) # to get informative messages while doing data wrangling 
-library(testthat) # to run tests
+library(assertthat) # to run assertions (checks)
 
 ```
 

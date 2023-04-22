@@ -10,10 +10,10 @@ This repository contains the functionality to get the GBIF taxon keys to be used
 
 ## Workflow
 
-<!-- [source data](data/raw) → Darwin Core [mapping script](src/dwc_mapping.Rmd) → generated [Darwin Core files](data/processed)
-This section describes how we go from raw data to standardized Darwin Core data -->
-
-TBD
+1. read [species list]() as exported from the LIFE RIPARIAS early alert tool
+2. read and combine taxonomic information from both checklists and GBIF Backbone
+3. Save the names and the GBIF taxon keys we should use in the early alert tool
+4. Check that the exported names and taxon keys in 1 are identical the ones in 3
 
 ## Repo structure
 
@@ -30,16 +30,14 @@ The repository structure is based on [Cookiecutter Data Science](http://drivenda
 │   └── workflows          : GitHub actions to periodically run the check in ./src
 │
 ├── src
-│   └── generate_taxon_keys.Rmd   : Darwin Core mapping script
+│   └── retrieve_compare_taxon_keys.Rmd   : Check taxonomic info script
 │
 └── data
     ├── reference          : LIFE RIPARIAS early alert species list export
-    └── processed          : taxa and vernacular names to be used in early alert tool GENERATED
+    └── processed          : names and GBIF taxon keys to be used in early alert tool GENERATED
 ```
 
 ## Installation
-
-<!-- This section is for users who want to download/adapt your checklist repository. You can leave it as is. -->
 
 1. Click on `Use this template` to create a new repository on your account
 2. Open the RStudio project file
@@ -55,7 +53,5 @@ The repository structure is based on [Cookiecutter Data Science](http://drivenda
 [List of contributors](<!-- Add the URL to the GitHub contributors of your repository here, e.g. https://github.com/trias-project/checklist-recipe/contributors -->)
 
 ## License
-
-<!-- The license is the open source license for the code and documentation in this repository, not the checklist data (that you can define in dwc_mapping.Rmd). As your repository is based on https://github.com/trias-project/checklist-recipe, we'd like it if you kept the open and permissive MIT license. You're welcome to add your name as a copyright holder (because your are for your own code contributions), which you can do in the LICENSE file. If you want to release your repository under a different license, please indicate somehow that it was based on https://github.com/trias-project/checklist-recipe. We know, licenses are complicated. See https://choosealicense.com/ for more information. -->
 
 [MIT License](LICENSE) for the code and documentation in this repository. The included data is released under another license.

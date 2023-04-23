@@ -1,3 +1,6 @@
+[![funding](https://img.shields.io/static/v1?label=published+through&message=LIFE+RIPARIAS&labelColor=00a58d&color=ffffff)](https://www.riparias.be/)
+[![fetch-data](https://github.com/riparias/taxon-keys-early-alert/actions/workflows/check_taxon_info.yaml/badge.svg)](https://github.com/riparias/taxon-keys-early-alert/actions/workflows/check_taxon_info.yaml)
+
 # Generate taxon keys for LIFE RIPARIAS early alert tool
 
 ## Rationale

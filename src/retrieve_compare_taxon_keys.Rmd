@@ -100,7 +100,7 @@ taxa
 
 ### Synonyms
 
-If a synonym occurs in the RIPARIAS target species list, we will use the accepted taxon key from the backbone.
+If a synonym occurs in the RIPARIAS target species list, we will use the correspondent accepted taxon key from the backbone.
 
 Synonyms:
 
@@ -113,15 +113,18 @@ synonyms
 Get taxonomic information of the correspondent accepted taxa:
 
 ```{r accepted}
-accepted <- purrr::map_df(
-  synonyms$acceptedKey, 
-  function(x) {
-    taxa_info <- rgbif::name_usage(x)$data
-  }
-)
+accepted <- NULL
+if (nrow(synonyms) > 0) {
+  accepted <- purrr::map_df(
+    synonyms$acceptedKey, 
+    function(x) {
+      taxa_info <- rgbif::name_usage(x)$data
+    }
+  )
+}
 ```
 
-View information about the accepted taxa:
+View information about the accepted taxa (´NULL´ if no synonyms are detected):
 
 ```{r}
 accepted
@@ -135,14 +138,17 @@ The early alert tool uses latin names as defined in the checklists (column `spec
 alert_species <- taxa_checklists %>%
   select(species, nubKey) %>%
   left_join(taxa %>% select(key, acceptedKey),
-            by = c("nubKey" = "key")) %>%
-  left_join(accepted %>%
-              select(key),
-            by = c("acceptedKey" = "key")) %>%
-  mutate(key = if_else(!is.na(acceptedKey),
-                       acceptedKey,
-                       nubKey)) %>%
-  select(-c(nubKey, acceptedKey))
+            by = c("nubKey" = "key"))
+if (!is.null(accepted)) {
+  alert_species <- alert_species %>%
+    left_join(accepted %>%
+                select(key),
+              by = c("acceptedKey" = "key")) %>%
+    mutate(key = if_else(!is.na(acceptedKey),
+                         acceptedKey,
+                         nubKey))
+}
+alert_species <- alert_species %>% select(-c(nubKey, acceptedKey))
 ```
 
 Show alert species:

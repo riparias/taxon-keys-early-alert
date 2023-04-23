@@ -8,8 +8,10 @@
 
 This repository contains the functionality to get the GBIF taxon keys to be used by the LIFE RIPARIAS [early alert tool](alert-riparias.be). The source taxa are retrieved from the followin GBIF checklists:
 1. the LIFE RIPARIAS target species list
-2. the List of Invasive Alien Species of Union concern (still to be published)
-3. the DVW (De Vlaamse Waterweg) target species list
+
+Upcoming lists to be added:
+- the [List of Invasive Alien Species of Union concern](https://www.gbif.org/dataset/79d65658-526c-4c78-9d24-1870d67f8439)
+- the DVW (De Vlaamse Waterweg) target species list (still to be published)
 
 ## Workflow
 

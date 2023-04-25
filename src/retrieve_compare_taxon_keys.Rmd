@@ -130,6 +130,29 @@ View information about the accepted taxa (´NULL´ if no synonyms are detected):
 accepted
 ```
 
+### Improve taxa
+
+Sometimes we need to refer to different taxa than the ones harvested via checklists.
+
+The species _Zizania latifolia_ is matched to the wrong taxon. We suspect a "bug" at GBIF side: see [issue](https://github.com/gbif/portal-feedback/issues/4718).
+
+We retrieve the correct match:
+
+```{r find_correct_match_zizania}
+zizania_latifolia <- rgbif::name_backbone(name = "Zizania latifolia")
+zizania_latifolia
+```
+
+and replace the wrong match in `taxa_checklists`:
+
+```{r replace_zizania_lat}
+taxa_checklists %>%
+  mutate(nubKey = if_else(species != "Zizania latifolia",
+                          nubKey,
+                          zizania_latifolia$usageKey)
+  )
+```
+
 # Combine information
 
 The early alert tool uses latin names as defined in the checklists (column `species`) and GBIF taxon keys of the accepted taxa as defined in the GBIF Backbone:

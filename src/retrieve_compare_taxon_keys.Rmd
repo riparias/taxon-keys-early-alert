@@ -146,7 +146,8 @@ zizania_latifolia
 and replace the wrong match in `taxa_checklists`:
 
 ```{r replace_zizania_lat}
-taxa_checklists %>%
+taxa_checklists <- 
+  taxa_checklists %>%
   mutate(nubKey = if_else(species != "Zizania latifolia",
                           nubKey,
                           zizania_latifolia$usageKey)

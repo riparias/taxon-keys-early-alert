@@ -15,7 +15,7 @@ Upcoming lists to be added:
 
 ## Workflow
 
-1. read [species list]() as exported from the LIFE RIPARIAS early alert tool
+1. read [species list](https://github.com/riparias/taxon-keys-early-alert/tree/main/data/reference) as exported from the LIFE RIPARIAS early alert tool: typically the most recent export is used
 2. read and combine taxonomic information from both checklists and GBIF Backbone
 3. Save the names and the GBIF taxon keys we should use in the early alert tool
 4. Check that the exported names and taxon keys in 1 are identical the ones in 3

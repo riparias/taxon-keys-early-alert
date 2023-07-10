@@ -216,10 +216,12 @@ Check species names:
 
 ```{r check_names_latin}
 assertthat::assert_that(all(alert_species$canonicalName %in% input_data$name))
+assertthat::assert_that(all(input_data$name %in% alert_species$canonicalName))
 ```
 
 Check GBIF taxon keys:
 
 ```{r check_keys}
 assertthat::assert_that(all(input_data$gbif_taxon_key %in% alert_species$key))
+assertthat::assert_that(all(alert_species$key %in% input_data$gbif_taxon_key))
 ```

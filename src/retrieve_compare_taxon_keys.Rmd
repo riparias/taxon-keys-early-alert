@@ -56,11 +56,18 @@ input_data %>% head(n = 5)
 The LIFE RIPARIAS early alert tool includes species of the following checklists:
 
 - [RIPARIAS target species list](https://www.gbif.org/dataset/fd004d9a-2ea4-4244-bb60-0df508d20a15) (`datasetKey`: `fd004d9a-2ea4-4244-bb60-0df508d20a15`)
+- [List of Invasive Alien Species of Union concern](https://www.gbif.org/dataset/79d65658-526c-4c78-9d24-1870d67f8439) (`datasetKey`: `79d65658-526c-4c78-9d24-1870d67f8439`)
 
 ```{r get_taxa}
-taxa_checklists <- 
-  rgbif::name_usage(datasetKey = "fd004d9a-2ea4-4244-bb60-0df508d20a15")$data
-taxa_checklists <- taxa_checklists %>% filter(origin == "SOURCE")
+checklists_keys <- c("fd004d9a-2ea4-4244-bb60-0df508d20a15",
+                     "79d65658-526c-4c78-9d24-1870d67f8439"
+)
+taxa_checklists <- purrr::map_dfr(checklists_keys, 
+                                  function(x) {
+                                    rgbif::name_usage(datasetKey = x)$data %>%
+                                      filter(origin == "SOURCE")
+                                  }
+)
 ```
 
 View taxa:
@@ -73,7 +80,7 @@ taxa_checklists
 
 The  `nubKey` are the GBIF taxon keys of the taxa as defined in the [GBIF Backbone Taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c).
 
-All taxa have a match to the bakbone:
+All taxa have a match to the backbone:
 
 ```{r check_match_backbone}
 assertthat::assert_that(all(!is.na(taxa_checklists$nubKey)))
@@ -87,7 +94,8 @@ taxa <- purrr::map_df(
   function(x) {
     taxa_info <- rgbif::name_usage(x)$data
   }
-)
+) %>%
+  distinct()
 ```
 
 View taxonomic information from backbone:
@@ -100,7 +108,7 @@ taxa
 
 ### Synonyms
 
-If a synonym occurs in the RIPARIAS target species list, we will use the correspondent accepted taxon key from the backbone.
+If a synonym occurs, we will use the correspondent accepted taxon key from the backbone.
 
 Synonyms:
 
@@ -130,15 +138,36 @@ View information about the accepted taxa (´NULL´ if no synonyms are detected):
 accepted
 ```
 
+## Higher rank
+
+The Asian hornet (_Vespa velutina_) is mentioned in the List of Invasive Alien Species of Union concern as a subspecies: _Vespa velutina nigrithorax_:
+
+```{r asian_hornet_subspecies}
+asian_hornet_subspecies <- taxa %>%
+  filter(rank == "SUBSPECIES")
+asian_hornet_subspecies
+```
+
+However, the vast majority of observations are at species level, i.e. _Vespa velutina_:
+
+```{r get_info_at_species_level}
+asian_hornet_species_key <- asian_hornet_subspecies$speciesKey
+asian_hornet_species <- rgbif::name_usage(asian_hornet_species_key)$data
+asian_hornet_species
+```
+
 # Combine information
 
-The early alert tool uses latin names as defined in the checklists (column `species`) and GBIF taxon keys of the accepted taxa as defined in the GBIF Backbone:
+The early alert tool uses latin names as defined in the checklists (column `canonicalName`) and GBIF taxon keys of the accepted taxa as defined in the GBIF Backbone:
 
 ```{r combine_names_gbif_keys}
 alert_species <- taxa_checklists %>%
-  select(species, nubKey) %>%
+  distinct(canonicalName, nubKey) %>%
+  # add GBIF Backbone information
   left_join(taxa %>% select(key, acceptedKey),
-            by = c("nubKey" = "key"))
+            by = c("nubKey" = "key")) %>%
+  # remove synonyms whose accepted taxa are in the list
+  filter(is.na(acceptedKey) | !acceptedKey %in% taxa_checklists$nubKey)
 if (!is.null(accepted)) {
   alert_species <- alert_species %>%
     left_join(accepted %>%
@@ -149,6 +178,16 @@ if (!is.null(accepted)) {
                          nubKey))
 }
 alert_species <- alert_species %>% select(-c(nubKey, acceptedKey))
+```
+
+Use species information for the Asian hornet:
+
+```{r}
+alert_species <- alert_species %>%
+  # remove subspecies Vespa velutina nigrithorax
+  filter(key != asian_hornet_subspecies$nubKey) %>%
+  # add species Vespa velutina
+  union(asian_hornet_species %>% select(canonicalName, key))
 ```
 
 Show alert species:
@@ -176,7 +215,7 @@ We can now check the correctness of the information as defined in the early aler
 Check species names:
 
 ```{r check_names_latin}
-assertthat::assert_that(all(input_data$name %in% alert_species$species))
+assertthat::assert_that(all(alert_species$canonicalName %in% input_data$name))
 ```
 
 Check GBIF taxon keys:

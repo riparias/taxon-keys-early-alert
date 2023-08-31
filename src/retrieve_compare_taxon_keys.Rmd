@@ -138,6 +138,18 @@ View information about the accepted taxa (´NULL´ if no synonyms are detected):
 accepted
 ```
 
+### Improve GBIF Backbone Match
+
+This is a patch to correct the match to the GBIF Backbone of our taxon _Lampropeltis getula (Linnaeus, 1766)_(https://www.gbif.org/species/209460581). It should be matched to the [homonymous species]((https://www.gbif.org/species/9799308)) in the GBIF Backbone. But that's not the case. 
+
+
+```{r}
+taxa_checklists <- taxa_checklists %>%
+  mutate(nubKey = if_else(.data$nubKey == 5224480, 9799308L, .data$nubKey))
+```
+
+This mismatch has been reported to GBIF (see issue [4946] (https://github.com/gbif/portal-feedback/issues/4946)). Once solved, this patch can be removed.
+
 ## Higher rank
 
 The Asian hornet (_Vespa velutina_) is mentioned in the List of Invasive Alien Species of Union concern as a subspecies: _Vespa velutina nigrithorax_:

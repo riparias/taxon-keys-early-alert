@@ -39,7 +39,7 @@ Create a data frame `input_data` from the export of the species list used in the
 
 ```{r read_species_list}
 input_data <- read_csv(
-  file = here("data", "reference", "Species-2023-07-10.csv")
+  file = here("data", "reference", "Species-2023-08-31.csv")
 ) 
 ```
 

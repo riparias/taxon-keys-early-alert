@@ -39,7 +39,7 @@ Create a data frame `input_data` from the export of the species list used in the
 
 ```{r read_species_list}
 input_data <- read_csv(
-  file = here("data", "reference", "Species-2023-08-31.csv")
+  file = here("data", "reference", "Species-2023-12-21.csv")
 ) 
 ```
 
@@ -57,10 +57,12 @@ The LIFE RIPARIAS early alert tool includes species of the following checklists:
 
 - [RIPARIAS target species list](https://www.gbif.org/dataset/fd004d9a-2ea4-4244-bb60-0df508d20a15) (`datasetKey`: `fd004d9a-2ea4-4244-bb60-0df508d20a15`)
 - [List of Invasive Alien Species of Union concern](https://www.gbif.org/dataset/79d65658-526c-4c78-9d24-1870d67f8439) (`datasetKey`: `79d65658-526c-4c78-9d24-1870d67f8439`)
+- [DVW - priority species list of the Flemish Waterways Authority](https://www.gbif.org/dataset/23e95da2-6095-4778-b893-9af18a310cb6) (`datasetKey`: `23e95da2-6095-4778-b893-9af18a310cb6`)
 
 ```{r get_taxa}
 checklists_keys <- c("fd004d9a-2ea4-4244-bb60-0df508d20a15",
-                     "79d65658-526c-4c78-9d24-1870d67f8439"
+                     "79d65658-526c-4c78-9d24-1870d67f8439",
+                     "23e95da2-6095-4778-b893-9af18a310cb6"
 )
 taxa_checklists <- purrr::map_dfr(checklists_keys, 
                                   function(x) {
@@ -199,7 +201,7 @@ alert_species <- alert_species %>%
   # remove subspecies Vespa velutina nigrithorax
   filter(key != asian_hornet_subspecies$nubKey) %>%
   # add species Vespa velutina
-  union(asian_hornet_species %>% select(canonicalName, key))
+  bind_rows(asian_hornet_species %>% select(canonicalName, key))
 ```
 
 Show alert species:

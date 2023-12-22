@@ -39,7 +39,7 @@ Create a data frame `input_data` from the export of the species list used in the
 
 ```{r read_species_list}
 input_data <- read_csv(
-  file = here("data", "reference", "Species-2023-12-21.csv")
+  file = here("data", "reference", "Species-2023-12-22.csv")
 ) 
 ```
 
@@ -151,6 +151,14 @@ taxa_checklists <- taxa_checklists %>%
 ```
 
 This mismatch has been reported to GBIF (see issue [4946] (https://github.com/gbif/portal-feedback/issues/4946)). Once solved, this patch can be removed.
+
+### Remove genera
+
+At the moment the GBIF-Alert doesn't support genera or higher taxon keys. See more details on issue [274](https://github.com/riparias/gbif-alert/issues/274). We remove `Carpobrotus`, originally included in the DVW priority species list:
+
+```{r}
+taxa_checklists <- taxa_checklists %>% filter(.data$canonicalName != "Carpobrotus")
+```
 
 ## Higher rank
 

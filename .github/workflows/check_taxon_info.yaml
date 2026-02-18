@@ -59,4 +59,5 @@ jobs:
       - name: Retrieve and compare taxon keys
         run: |
           source("src/run_retrieve_compare_taxon_keys.R")
+          source("tests/compare_taxa.R")
         shell: Rscript {0}

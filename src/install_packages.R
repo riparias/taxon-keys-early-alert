@@ -4,7 +4,8 @@ installed <- rownames(installed.packages())
 required <- c("readr", "here", "dplyr",
               "rgbif", "purrr", "tidylog",
               "knitr", # to extract R code from Rmd in run_*.R file(s)
-              "assertthat" # to run assertions
+              "assertthat", # to run assertions
+              "testthat" # to run tests in tests/ directory
 )
 # install packages if needed
 if (!all(required %in% installed)) {

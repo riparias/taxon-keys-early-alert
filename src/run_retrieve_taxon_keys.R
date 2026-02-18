@@ -3,6 +3,6 @@ library(knitr)
 
 # create temporary R file
 tempR <- tempfile(fileext = ".R")
-knitr::purl("./src/retrieve_compare_taxon_keys.Rmd", output=tempR)
+knitr::purl("./src/retrieve_taxon_keys.Rmd", output=tempR)
 source(tempR)
 unlink(tempR)

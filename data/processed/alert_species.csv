@@ -38,7 +38,6 @@ Pycnonotus cafer,2486131
 Eriocheir sinensis,2225776
 Pacifastacus leniusculus,2226990
 Solenopsis invicta,5035230
-Sciurus carolinensis,5219681
 Gambusia affinis,2350580
 Pseudorasbora parva,2362868
 Muntiacus reevesi,2440946
@@ -72,7 +71,6 @@ Xenopus laevis,5217334
 Acridotheres tristis,2489005
 Ameiurus melas,2340977
 Rugulopteryx okamurae,5824863
-Salvinia molesta,5274863
 Persicaria perfoliata,4033648
 Pistia stratiotes,2870583
 Microstegium vimineum,5289808
@@ -85,7 +83,7 @@ Celastrus orbiculatus,3169169
 Cortaderia jubata,2704521
 Cardiospermum grandiflorum,3189935
 Pueraria montana lobata,2977647
-Triadica sebifera,3054399
+Sapium sebiferum,3054399
 Humulus scandens,2984537
 Eichhornia crassipes,2765942
 Lespedeza cuneata,8114276
@@ -99,6 +97,11 @@ Hakea sericea,7287606
 Ehrharta calycina,2702865
 Gunnera tinctoria,2984306
 Gymnocoronis spilanthoides,6063677
+Marisa cornuarietis,2292586
+Cipangopaludina chinensis,9738098
+Brachyponera chinensis,1319870
+Acridotheres cristatellus,2489010
+Sciurus carolinensis,5219681
 Rhus typhina,3190538
 Parthenocissus quinquefolia,3039194
 Spiraea billardii,7889822
@@ -133,6 +136,7 @@ Parthenocissus inserta,3039203
 Spiraea tomentosa,3026819
 Spiraea douglasii,3027159
 Reynoutria bohemica,4038485
+Salvinia molesta,5274863
 Rudbeckia laciniata,3114229
 Reynoutria sachalinensis,2889088
 Spiraea salicifolia,3026454

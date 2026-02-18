@@ -39,7 +39,7 @@ Create a data frame `input_data` from the export of the species list used in the
 
 ```{r read_species_list}
 input_data <- read_csv(
-  file = here("data", "reference", "Species-2023-12-22.csv")
+  file = here("data", "reference", "Species-2026-02-18.csv")
 ) 
 ```
 
@@ -88,7 +88,7 @@ All taxa have a match to the backbone:
 assertthat::assert_that(all(!is.na(taxa_checklists$nubKey)))
 ```
 
-We harvest taxonomic information from the backbone, as these keys are the ones linked to the occurrences and so used in the early alert tool:
+We harvest taxonomic information from the backbone, as these keys are the ones linked to the occurrences and so used in the early alert tool. Notice that some checklists define synonymy relationships, see columns `acceptedKey` and `accepted`. We will search the match to GBIF Backbone for the accepted taxa as well:
 
 ```{r harvest_from_backbone}
 taxa <- purrr::map_df(
@@ -97,6 +97,18 @@ taxa <- purrr::map_df(
     taxa_info <- rgbif::name_usage(x)$data
   }
 ) %>%
+  distinct()
+extra_taxa <- purrr::map_df(
+  taxa_checklists$acceptedKey, 
+  function(x) {
+    if (!is.na(x)) {
+      taxa_info <- rgbif::name_usage(x)$data
+    }
+  }
+) %>%
+  distinct()
+# Get all taxa information from the backbone
+taxa <- bind_rows(taxa, extra_taxa) %>%
   distinct()
 ```
 
@@ -140,18 +152,6 @@ View information about the accepted taxa (´NULL´ if no synonyms are detected):
 accepted
 ```
 
-### Improve GBIF Backbone Match
-
-This is a patch to correct the match to the GBIF Backbone of our taxon _Lampropeltis getula (Linnaeus, 1766)_(https://www.gbif.org/species/209460581). It should be matched to the [homonymous species]((https://www.gbif.org/species/9799308)) in the GBIF Backbone. But that's not the case. 
-
-
-```{r}
-taxa_checklists <- taxa_checklists %>%
-  mutate(nubKey = if_else(.data$nubKey == 5224480, 9799308L, .data$nubKey))
-```
-
-This mismatch has been reported to GBIF (see issue [4946] (https://github.com/gbif/portal-feedback/issues/4946)). Once solved, this patch can be removed.
-
 ### Remove genera
 
 At the moment the GBIF-Alert doesn't support genera or higher taxon keys. See more details on issue [274](https://github.com/riparias/gbif-alert/issues/274). We remove `Carpobrotus`, originally included in the DVW priority species list:
@@ -190,6 +190,7 @@ alert_species <- taxa_checklists %>%
             by = c("nubKey" = "key")) %>%
   # remove synonyms whose accepted taxa are in the list
   filter(is.na(acceptedKey) | !acceptedKey %in% taxa_checklists$nubKey)
+# Add accepted keys for synonyms if any
 if (!is.null(accepted)) {
   alert_species <- alert_species %>%
     left_join(accepted %>%
@@ -229,21 +230,26 @@ write_csv(alert_species,
 )
 ```
 
-# Check correctness species list of the LIFE RIPARIAS early alert tool
+## Explore matches and mismatches
 
-We can now check the correctness of the information as defined in the early alert tool (species list in `./data/reference`)
+This section is good for finding mismatches between the names in the list used in the early alert tool and the GBIF Backbone, which can be due to misspellings, taxonomic updates, or other issues.
 
-
-Check species names:
-
-```{r check_names_latin}
-assertthat::assert_that(all(alert_species$canonicalName %in% input_data$name))
-assertthat::assert_that(all(input_data$name %in% alert_species$canonicalName))
+```{r}
+dplyr::setdiff(alert_species$canonicalName,input_data$name)
 ```
 
-Check GBIF taxon keys:
-
-```{r check_keys}
-assertthat::assert_that(all(input_data$gbif_taxon_key %in% alert_species$key))
-assertthat::assert_that(all(alert_species$key %in% input_data$gbif_taxon_key))
+```{r}
+dplyr::setdiff(alert_species$key, input_data$gbif_taxon_key)
 ```
+
+Are there species without match to the backbone?
+
+```{r}
+input_data %>%
+  filter(!gbif_taxon_key %in% alert_species$key)
+```
+
+
+
+
+
